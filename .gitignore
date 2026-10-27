@@ -1,0 +1,23 @@
+# ---- 绝不上传：本机私有数据 ----
+# 抖音登录态（cookie / sessionid 全在里面，泄露等于把账号交出去）
+profile/
+runtime/
+
+# 定时任务配置（含联系人昵称）
+schedule.json
+
+# 运行日志
+*.log
+boot_*.log
+runtime_boot*.log
+sched_test*.log
+
+# Python 缓存
+__pycache__/
+*.py[cod]
+*.pyo
+
+# 本地临时文件
+.DS_Store
+Thumbs.db
+*.tmp
