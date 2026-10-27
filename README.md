@@ -1,16 +1,3 @@
----
-AIGC:
-    Label: "1"
-    ContentProducer: 001191440300708461136T1XGW3
-    ProduceID: 841b1336bb5a9922ebd9f6b0ef1cf84b_8d65ccf0d1b511f18068525400de85a5
-    ReservedCode1: 3FtOPxiaRUxoUNsSoEb+YgrncudADYqn5bZhztdMcTOFlKCiiEG0bCyGiGyqefxFtsBVvW2UJGgAcbW9yGfPGVtycKO8LYicZRBYWC20xd/zmZoOMYDSMUTEuZK0RgHGYiuoKH6MJEScCtBEZC8S8ARHjGR1CeyRsThzP1OvYFwPdxKkkV+aSjq4YFw=
-    ContentPropagator: 001191440300708461136T1XGW3
-    PropagateID: 841b1336bb5a9922ebd9f6b0ef1cf84b_8d65ccf0d1b511f18068525400de85a5
-    ReservedCode2: 3FtOPxiaRUxoUNsSoEb+YgrncudADYqn5bZhztdMcTOFlKCiiEG0bCyGiGyqefxFtsBVvW2UJGgAcbW9yGfPGVtycKO8LYicZRBYWC20xd/zmZoOMYDSMUTEuZK0RgHGYiuoKH6MJEScCtBEZC8S8ARHjGR1CeyRsThzP1OvYFwPdxKkkV+aSjq4YFw=
----
-
-<div align="center">
-
 # SparkKeeper
 
 **火花守夜人** · 在你自己的电脑上，替你守住那点微弱的小火苗。
