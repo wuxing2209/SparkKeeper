@@ -1,0 +1,11 @@
+{
+  "port": 8765,
+  "max_batch": 20,
+  "min_interval": 8,
+  "default_interval": 10,
+  "messages": [
+    "早啊，今天也要好好吃饭",
+    "在忙啥呢，别熬夜",
+    "晚安，明天见"
+  ]
+}
