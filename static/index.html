@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>抖音续火花 · 网页控制台</title>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#171a21; --panel2:#1e222b; --line:#2a2f3a;
+    --txt:#e8ebf0; --sub:#8b93a5; --accent:#fe2c55; --cyan:#25f4ee;
+    --ok:#3ddc84; --warn:#ffb020; --fail:#ff5c5c;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--txt);
+    font-family:"Microsoft YaHei","PingFang SC",-apple-system,"Segoe UI",sans-serif;
+    font-size:14px; height:100vh; display:flex; flex-direction:column;
+  }
+  header{
+    display:flex; align-items:center; gap:14px; padding:14px 20px;
+    background:var(--panel); border-bottom:1px solid var(--line); flex-shrink:0;
+  }
+  .brand{display:flex; align-items:center; gap:10px; font-size:16px; font-weight:600;}
+  .logo{
+    width:26px;height:26px;border-radius:7px;
+    background:linear-gradient(135deg,var(--accent),#8a2be2 60%,var(--cyan));
+  }
+  .status{display:flex; align-items:center; gap:7px; color:var(--sub); font-size:13px;}
+  .dot{width:8px;height:8px;border-radius:50%;background:#555;transition:.3s;}
+  .dot.on{background:var(--ok); box-shadow:0 0 8px rgba(61,220,132,.7);}
+  .dot.wait{background:var(--warn);}
+  .spacer{flex:1;}
+  button{
+    background:var(--panel2); color:var(--txt); border:1px solid var(--line);
+    border-radius:8px; padding:8px 14px; cursor:pointer; font-size:13px;
+    font-family:inherit; transition:.15s;
+  }
+  button:hover:not(:disabled){border-color:#3d4453; background:#232833;}
+  button:disabled{opacity:.45; cursor:not-allowed;}
+  button.primary{
+    background:var(--accent); border-color:var(--accent); color:#fff; font-weight:600;
+  }
+  button.primary:hover:not(:disabled){background:#e02348;}
+  main{flex:1; display:grid; grid-template-columns:340px 1fr; overflow:hidden;}
+  .col{display:flex; flex-direction:column; overflow:hidden;}
+  .col.left{border-right:1px solid var(--line); background:var(--panel);}
+  .col-head{
+    padding:12px 16px; border-bottom:1px solid var(--line);
+    display:flex; align-items:center; gap:10px; flex-shrink:0;
+  }
+  .col-head h2{font-size:13px; margin:0; font-weight:600; color:var(--sub); letter-spacing:.5px;}
+  .count{
+    background:var(--panel2); border-radius:20px; padding:1px 9px; font-size:12px; color:var(--sub);
+  }
+  input[type=text], textarea{
+    background:var(--panel2); border:1px solid var(--line); color:var(--txt);
+    border-radius:8px; padding:8px 11px; font-family:inherit; font-size:13px; outline:none;
+    width:100%;
+  }
+  input[type=text]:focus, textarea:focus{border-color:#414a5c;}
+  .search{padding:10px 16px; flex-shrink:0;}
+  .list{flex:1; overflow-y:auto; padding:0 8px 12px;}
+  .item{
+    display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:8px;
+    cursor:pointer; transition:.12s;
+  }
+  .item:hover{background:var(--panel2);}
+  .item input{accent-color:var(--accent); width:15px; height:15px; cursor:pointer; flex-shrink:0;}
+  .item .meta{min-width:0; flex:1;}
+  .item .name{
+    font-size:13.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .item .prev{
+    font-size:11.5px; color:var(--sub); white-space:nowrap; overflow:hidden;
+    text-overflow:ellipsis; margin-top:2px;
+  }
+  .empty{padding:40px 20px; text-align:center; color:var(--sub); font-size:13px; line-height:1.9;}
+  .right{display:flex; flex-direction:column; overflow:hidden;}
+  .panel{padding:16px 20px; border-bottom:1px solid var(--line);}
+  .panel h3{
+    font-size:12px; margin:0 0 10px; color:var(--sub); font-weight:600; letter-spacing:.5px;
+  }
+  textarea{resize:vertical; min-height:74px; line-height:1.7;}
+  .row{display:flex; align-items:center; gap:16px; flex-wrap:wrap;}
+  .row + .row{margin-top:12px;}
+  label.radio{display:flex; align-items:center; gap:6px; cursor:pointer; font-size:13px; color:var(--sub);}
+  label.radio input{accent-color:var(--accent);}
+  .range{display:flex; align-items:center; gap:10px; font-size:13px; color:var(--sub);}
+  input[type=range]{width:170px; accent-color:var(--accent);}
+  .hint{font-size:12px; color:var(--sub); line-height:1.8;}
+  .hint b{color:var(--warn); font-weight:600;}
+  .log{
+    flex:1; overflow-y:auto; padding:12px 20px; font-family:Consolas,"Courier New",monospace;
+    font-size:12.5px; line-height:1.9;
+  }
+  .log .l{display:flex; gap:10px;}
+  .log .t{color:#5b6375; flex-shrink:0;}
+  .log .ok{color:var(--ok);}
+  .log .fail{color:var(--fail);}
+  .log .error{color:var(--fail);}
+  .log .warn{color:var(--warn);}
+  .log .info{color:#b9c0cf;}
+  .bar{height:3px; background:var(--panel2);}
+  .bar > i{display:block; height:100%; width:0; background:linear-gradient(90deg,var(--accent),var(--cyan)); transition:width .3s;}
+  ::-webkit-scrollbar{width:9px;}
+  ::-webkit-scrollbar-thumb{background:#2c3240; border-radius:5px;}
+  ::-webkit-scrollbar-thumb:hover{background:#3a4252;}
+  ::-webkit-scrollbar-track{background:transparent;}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><div class="logo"></div>抖音续火花</div>
+  <div class="status"><span class="dot" id="dot"></span><span id="statusText">未连接浏览器</span></div>
+  <div class="spacer"></div>
+  <button id="btnLogin">扫码登录</button>
+  <button id="btnRefresh">刷新联系人</button>
+  <button id="btnDebug" title="导出当前页面截图与 HTML，用于校准选择器">导出页面结构</button>
+</header>
+
+<main>
+  <div class="col left">
+    <div class="col-head">
+      <h2>联系人</h2>
+      <span class="count" id="count">0</span>
+      <div class="spacer"></div>
+      <button id="btnAll" style="padding:5px 10px;font-size:12px;">全选</button>
+    </div>
+    <div class="search"><input type="text" id="search" placeholder="搜索昵称"></div>
+    <div class="list" id="list">
+      <div class="empty">还没有联系人数据<br>先点右上角「扫码登录」，登录后点「刷新联系人」</div>
+    </div>
+  </div>
+
+  <div class="col right">
+    <div class="panel">
+      <div class="row" style="justify-content:space-between;">
+        <div class="hint" id="selInfo">已选 0 个联系人</div>
+        <div class="row">
+          <div class="range"><span>间隔</span><input type="range" id="interval" min="8" max="60" value="10"><span id="intervalVal">10 s</span></div>
+          <button class="primary" id="btnSend" disabled>开始发送</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>话术（每行一条）</h3>
+      <textarea id="msgs" placeholder="早啊，今天也要好好吃饭&#10;在忙啥呢，别熬夜&#10;晚安，明天见"></textarea>
+      <div class="row" style="margin-top:10px;">
+        <label class="radio"><input type="radio" name="mode" value="random" checked>随机取一条</label>
+        <label class="radio"><input type="radio" name="mode" value="fixed">固定用第一条</label>
+        <div class="spacer"></div>
+        <div class="hint">单次上限 20 人 · 间隔越低越容易触发风控</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>每日定时自动发送</h3>
+      <div class="row">
+        <div class="hint">每天</div>
+        <input type="time" id="schedTime" value="09:00" style="background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;outline:none;">
+        <button id="btnSchedSave">保存为每日任务</button>
+        <div class="hint">用当前勾选的联系人 + 上面的话术与间隔，每天到点自动发一次</div>
+      </div>
+      <div id="schedList" style="margin-top:12px;"></div>
+      <div class="hint" style="margin-top:10px;">只在服务运行且浏览器登录态有效时才会触发；电脑关机或 Chrome 关闭则当天不发送。</div>
+    </div>
+
+    <div class="bar"><i id="bar"></i></div>
+    <div class="log" id="log">
+      <div class="l"><span class="info">等待操作。登录后工具只读取会话列表，不会自动发送任何内容，发送必须由你点按钮触发。</span></div>
+    </div>
+  </div>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+let contacts = [];
+let selected = new Set();
+let lastLogCount = -1;
+
+function addLog(msg, level = 'info') {
+  const el = document.createElement('div');
+  el.className = 'l';
+  const t = new Date().toLocaleTimeString('zh-CN', {hour12: false});
+  el.innerHTML = '<span class="t">' + t + '</span><span class="' + level + '"></span>';
+  el.lastChild.textContent = msg;
+  const box = $('log');
+  box.appendChild(el);
+  box.scrollTop = box.scrollHeight;
+  while (box.childElementCount > 400) box.removeChild(box.firstChild);
+}
+
+async function api(path, body) {
+  const opt = body === undefined ? {} : {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(body)
+  };
+  const r = await fetch(path, opt);
+  return await r.json();
+}
+
+async function pollStatus() {
+  try {
+    const st = await api('/api/status');
+    const dot = $('dot'), txt = $('statusText');
+    if (st.logged_in) {
+      dot.className = 'dot on';
+      txt.textContent = '已登录';
+    } else if (st.browser) {
+      dot.className = 'dot wait';
+      txt.textContent = '浏览器已打开，等待扫码';
+    } else {
+      dot.className = 'dot';
+      txt.textContent = '未连接浏览器';
+    }
+    if (st.job) renderJob(st.job);
+  } catch (e) {
+    $('dot').className = 'dot';
+    $('statusText').textContent = '服务异常';
+  }
+}
+
+function renderList() {
+  const kw = $('search').value.trim().toLowerCase();
+  const box = $('list');
+  const shown = contacts.filter(c => !kw || c.name.toLowerCase().includes(kw));
+  $('count').textContent = contacts.length;
+  if (!shown.length) {
+    box.innerHTML = '<div class="empty">' + (contacts.length ? '没有匹配的联系人' : '还没有联系人数据<br>先点右上角「扫码登录」，登录后点「刷新联系人」') + '</div>';
+    return;
+  }
+  box.innerHTML = '';
+  for (const c of shown) {
+    const div = document.createElement('div');
+    div.className = 'item';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.checked = selected.has(c.name);
+    cb.onchange = () => {
+      if (cb.checked) selected.add(c.name); else selected.delete(c.name);
+      updateSel();
+    };
+    const meta = document.createElement('div');
+    meta.className = 'meta';
+    const n = document.createElement('div');
+    n.className = 'name';
+    n.textContent = c.name;
+    meta.appendChild(n);
+    if (c.preview) {
+      const p = document.createElement('div');
+      p.className = 'prev';
+      p.textContent = c.preview;
+      meta.appendChild(p);
+    }
+    div.appendChild(cb);
+    div.appendChild(meta);
+    div.onclick = e => {
+      if (e.target === cb) return;
+      cb.checked = !cb.checked;
+      cb.onchange();
+    };
+    box.appendChild(div);
+  }
+}
+
+function updateSel() {
+  $('selInfo').textContent = '已选 ' + selected.size + ' 个联系人';
+  $('btnSend').disabled = selected.size === 0;
+}
+
+let jobRendered = null;
+function renderJob(job) {
+  const total = job.total || 0, done = job.done || 0;
+  $('bar').style.width = (total ? Math.min(100, done / total * 100) : 0) + '%';
+  if (job.state === 'running') {
+    $('btnSend').disabled = true;
+    $('btnSend').textContent = (job.source === 'schedule' ? '定时任务 ' : '发送中 ') + done + '/' + total;
+  } else {
+    $('btnSend').textContent = '开始发送';
+    if (selected.size) $('btnSend').disabled = false;
+  }
+  const logs = job.logs || [];
+  if (logs.length > lastLogCount) {
+    for (let i = Math.max(0, lastLogCount); i < logs.length; i++) {
+      const l = logs[i];
+      addLog(l.msg, l.level || 'info');
+    }
+    lastLogCount = logs.length;
+  }
+  if (job.state === 'done' && jobRendered !== job.id) {
+    jobRendered = job.id;
+    addLog('任务结束：成功 ' + job.ok + '，失败 ' + job.fail, job.fail ? 'warn' : 'ok');
+  }
+}
+
+$('btnLogin').onclick = async () => {
+  addLog('正在拉起独立浏览器窗口，请在弹出的窗口里扫码登录…', 'info');
+  const r = await api('/api/login', {});
+  if (r.ok) {
+    if (r.logged_in) addLog('检测到已登录状态，可以直接刷新联系人', 'ok');
+    else addLog('浏览器已打开。请在窗口内点击「登录」并扫码，完成后回到这里点「刷新联系人」', 'warn');
+  } else {
+    addLog('拉起失败：' + (r.reason || '未知错误'), 'fail');
+  }
+};
+
+$('btnRefresh').onclick = async () => {
+  $('btnRefresh').disabled = true;
+  $('btnRefresh').textContent = '读取中…';
+  addLog('正在读取抖音消息页的会话列表…', 'info');
+  const r = await api('/api/contacts', {});
+  $('btnRefresh').disabled = false;
+  $('btnRefresh').textContent = '刷新联系人';
+  if (r.ok) {
+    contacts = r.contacts || [];
+    selected = new Set([...selected].filter(n => contacts.some(c => c.name === n)));
+    renderList();
+    updateSel();
+    addLog('读取成功，共 ' + contacts.length + ' 个会话（识别策略：' + r.strategy + '）', 'ok');
+    if (!contacts.length) addLog('一个都没读到，建议点「导出页面结构」，用于校准页面选择器', 'warn');
+  } else {
+    addLog('读取失败：' + (r.reason || '未知错误'), 'fail');
+  }
+};
+
+$('btnDebug').onclick = async () => {
+  addLog('正在导出当前页面截图与 HTML…', 'info');
+  const r = await api('/api/debug', {});
+  if (r.ok) {
+    addLog('已导出截图：' + r.screenshot, 'ok');
+    addLog('已导出 HTML：' + r.html, 'ok');
+    addLog('识别策略 ' + r.strategy + '，命中 ' + r.count + ' 条', 'info');
+  } else {
+    addLog('导出失败：' + (r.reason || '未知错误'), 'fail');
+  }
+};
+
+$('btnAll').onclick = () => {
+  if (selected.size === contacts.length && contacts.length) selected.clear();
+  else contacts.forEach(c => selected.add(c.name));
+  renderList();
+  updateSel();
+};
+
+$('search').oninput = renderList;
+$('interval').oninput = () => { $('intervalVal').textContent = $('interval').value + ' s'; };
+
+$('btnSend').onclick = async () => {
+  const msgs = $('msgs').value.split('\n').map(s => s.trim()).filter(Boolean);
+  if (!msgs.length) { addLog('话术为空，先在中间输入框写点内容', 'fail'); return; }
+  const targets = [...selected];
+  const mode = document.querySelector('input[name=mode]:checked').value;
+  const interval = parseInt($('interval').value, 10);
+  const tip = '即将向 ' + targets.length + ' 个联系人发送消息，间隔 ' + interval + ' 秒。\n\n这是真实发送，无法撤回。确认继续吗？';
+  if (!confirm(tip)) { addLog('已取消发送', 'warn'); return; }
+
+  lastLogCount = 0;
+  $('btnSend').disabled = true;
+  addLog('提交任务：' + targets.length + ' 人 / 模式 ' + (mode === 'random' ? '随机' : '固定') + ' / 间隔 ' + interval + 's', 'info');
+  const r = await api('/api/send', {targets, messages: msgs, mode, interval});
+  if (!r.ok) {
+    addLog('提交失败：' + (r.reason || '未知错误'), 'fail');
+    $('btnSend').disabled = false;
+  }
+};
+
+async function loadSched() {
+  const r = await api('/api/schedule');
+  const box = $('schedList');
+  const tasks = (r && r.tasks) || [];
+  if (!tasks.length) { box.innerHTML = '<div class="hint">还没有定时任务</div>'; return; }
+  box.innerHTML = '';
+  tasks.forEach(t => {
+    const d = document.createElement('div');
+    d.className = 'row';
+    d.style.cssText = 'justify-content:space-between;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin-top:8px;';
+    const info = document.createElement('div');
+    info.className = 'hint';
+    info.textContent = '每天 ' + t.time + ' · ' + ((t.targets || []).length) + ' 人 · 间隔 ' + t.interval + 's · ' + (t.scheduled_today ? '今天已执行' : '等待执行');
+    const del = document.createElement('button');
+    del.textContent = '删除';
+    del.style.cssText = 'padding:4px 10px;font-size:12px;';
+    del.onclick = async () => {
+      if (!confirm('删除每天 ' + t.time + ' 的定时任务？')) return;
+      const rr = await api('/api/schedule/delete', {id: t.id});
+      addLog(rr.ok ? '已删除定时任务 ' + t.time : '删除失败', rr.ok ? 'ok' : 'fail');
+      loadSched();
+    };
+    d.appendChild(info);
+    d.appendChild(del);
+    box.appendChild(d);
+  });
+}
+
+$('btnSchedSave').onclick = async () => {
+  const time = $('schedTime').value;
+  const msgs = $('msgs').value.split('\n').map(s => s.trim()).filter(Boolean);
+  const targets = [...selected];
+  const mode = document.querySelector('input[name=mode]:checked').value;
+  const interval = parseInt($('interval').value, 10);
+  if (!targets.length) { addLog('先勾选要发送的联系人', 'fail'); return; }
+  if (!msgs.length) { addLog('话术为空，先在中间输入框写点内容', 'fail'); return; }
+  const tip = '将保存一个每日 ' + time + ' 自动向 ' + targets.length + ' 个联系人发送消息的定时任务。\n\n到点会自动真实发送，确认吗？';
+  if (!confirm(tip)) { addLog('已取消', 'warn'); return; }
+  const r = await api('/api/schedule/save', {time, targets, messages: msgs, mode, interval});
+  if (r.ok) {
+    addLog('已保存定时任务：每天 ' + time + '，' + targets.length + ' 人', 'ok');
+    loadSched();
+  } else {
+    addLog('保存失败：' + (r.reason || '未知错误'), 'fail');
+  }
+};
+
+renderList();
+updateSel();
+loadSched();
+pollStatus();
+setInterval(pollStatus, 2500);
+</script>
+</body>
+</html>
